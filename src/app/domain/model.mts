@@ -1,12 +1,26 @@
+type OrderLineArgs = {
+  orderRef: string
+  sku: string
+  qty: number
+}
+
 class OrderLine {
   orderRef: string
   sku: string
   qty: number
 
-  constructor({ orderRef, sku, qty }: OrderLine) {
+  constructor({ orderRef, sku, qty }: OrderLineArgs) {
     this.orderRef = orderRef
     this.sku = sku
     this.qty = qty
+  }
+
+  equals(other: OrderLine) {
+    return (
+      this.orderRef === other.orderRef
+      && this.sku === other.sku
+      && this.qty === other.qty
+    )
   }
 }
 
@@ -44,6 +58,10 @@ class Batch {
 
   deallocate(line: OrderLine) {
     this.allocations.delete(line)
+  }
+
+  equals(other: Batch) {
+    return this.ref === other.ref
   }
 
   private canAllocate(line: OrderLine) {
