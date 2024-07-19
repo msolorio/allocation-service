@@ -64,7 +64,7 @@ class Batch {
     return this.ref === other.ref
   }
 
-  private canAllocate(line: OrderLine) {
+  canAllocate(line: OrderLine) {
     return line.sku === this.sku && this.availableQty >= line.qty
   }
 
@@ -73,4 +73,32 @@ class Batch {
   }
 }
 
-export { Batch, OrderLine }
+class OutOfStock extends Error {
+  constructor() {
+    super('Out of stock')
+    this.name = 'OutOfStock'
+  }
+}
+
+function allocate(orderline: OrderLine, batches: Array<Batch>) {
+  const sortedBatches = batches.sort((a, b) => {
+    if (a.eta == null) {
+      return -1
+    } else if (b.eta == null) {
+      return 1
+    } else {
+      return a.eta.getTime() - b.eta.getTime()
+    }
+  })
+
+  for (const batch of sortedBatches) {
+    if (batch.canAllocate(orderline)) {
+      batch.allocate(orderline)
+      return batch.ref
+    }
+  }
+
+  throw new OutOfStock()
+}
+
+export { Batch, OrderLine, allocate, OutOfStock, }
