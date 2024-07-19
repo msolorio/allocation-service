@@ -20,5 +20,8 @@ logs:
 test:
 	docker-compose run --rm --no-deps --entrypoint='npm test' app
 
+test-coverage:
+	docker-compose run --rm --no-deps --entrypoint='npm run test:coverage' app
+
 test-ci:
 	docker-compose -f docker-compose.ci.yml run --rm --no-deps --entrypoint='npm test' app
