@@ -1,5 +1,4 @@
-import { PrismaClient } from '.prisma/client/default.js'
-const prisma = new PrismaClient()
+import { prisma } from '#app/adapters/orm/index.mjs'
 
 async function deleteAll() {
   return await prisma.$executeRaw`DELETE FROM "Batch"`
