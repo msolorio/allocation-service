@@ -25,3 +25,6 @@ test-coverage:
 
 test-ci:
 	docker-compose -f docker-compose.ci.yml run --rm --no-deps --entrypoint='npm test' app
+
+prisma-migrate:
+	docker-compose run --rm --no-deps --entrypoint='npm run prisma:migrate' app

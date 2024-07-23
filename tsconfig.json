@@ -12,6 +12,7 @@
     "importHelpers": true,
     "alwaysStrict": true,
     "sourceMap": true,
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
@@ -20,6 +21,7 @@
     "noImplicitAny": false,
     "noImplicitThis": false,
     "strictNullChecks": false,
+    "strict": true,
     "allowJs": true,
     "baseUrl": ".",
     "paths": {
