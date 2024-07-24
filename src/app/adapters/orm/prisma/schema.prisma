@@ -21,3 +21,12 @@ model Batch {
   qty Int
   eta DateTime?
 }
+
+model OrderLine {
+  id       Int    @id @default(autoincrement())
+  orderref String
+  sku      String
+  qty      Int
+
+  @@unique([orderref, sku])
+}

@@ -24,7 +24,7 @@
     "#app/*": "./dist/src/app/*"
   },
   "prisma": {
-    "schema": "src/app/adapters/prisma/schema.prisma"
+    "schema": "src/app/adapters/orm/prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^5.17.0",
