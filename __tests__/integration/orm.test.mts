@@ -1,46 +1,41 @@
 import { prisma } from '#app/adapters/orm/index.mjs'
+import { Batch } from '#app/domain/model.mjs'
 
 async function deleteAll() {
   return await prisma.$executeRaw`DELETE FROM "Batch"`
 }
 
-describe('prisma orm', () => {
+describe('custom orm mapper', () => {
   afterEach(async () => await deleteAll())
 
-  it('can create a batch', async () => {
-    await prisma.batch.create({
-      data: {
-        ref: 'batch-1',
-        sku: 'TABLE',
-        qty: 20,
-        eta: null
-      },
-    })
+  it('can return a batch model object', async () => {
+    await prisma.$queryRaw`INSERT INTO "Batch" (ref, sku, qty, eta) VALUES ('batch-3', 'LAMP', 20, NULL)`
 
-    const result = await prisma.$queryRaw`SELECT * FROM "Batch"`
+    const batch = (await prisma.batch.findUnique({ where: { ref: 'batch-3' } })).toDomain()
 
-    expect(result[0]).toEqual({
-      id: expect.any(Number),
-      ref: 'batch-1',
-      sku: 'TABLE',
-      qty: 20,
+    expect(batch).toEqual({
+      ref: 'batch-3',
+      sku: 'LAMP',
+      initialQty: 20,
       eta: null,
+      allocations: new Set(),
     })
   })
 
-  it('can retrieve a batch', async () => {
-    await prisma.$queryRaw`
-      INSERT INTO "Batch" (ref, sku, qty, eta) VALUES ('batch-2', 'CHAIR', 20, NULL)
-    `
+  it('can save a batch model object', async () => {
+    await prisma.batch.saveFromDomain(new Batch({
+      ref: 'batch-4',
+      sku: 'DESK',
+      qty: 20,
+      eta: null,
+    }))
 
-    const batch = await prisma.batch.findUnique({
-      where: { ref: 'batch-2' },
-    })
+    const result = await prisma.$queryRaw`SELECT * FROM "Batch" WHERE ref = 'batch-4'`
 
-    expect(batch).toEqual({
+    expect(result[0]).toEqual({
       id: expect.any(Number),
-      ref: 'batch-2',
-      sku: 'CHAIR',
+      ref: 'batch-4',
+      sku: 'DESK',
       qty: 20,
       eta: null,
     })

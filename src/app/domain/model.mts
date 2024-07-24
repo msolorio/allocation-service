@@ -24,7 +24,7 @@ class OrderLine {
   }
 }
 
-type batchArgs = {
+type BatchArgs = {
   ref: string
   sku: string
   qty: number
@@ -35,10 +35,10 @@ class Batch {
   ref: string
   sku: string
   eta: Date | null
-  private initialQty: number
-  private allocations: Set<OrderLine>
+  initialQty: number
+  allocations: Set<OrderLine>
 
-  constructor({ ref, sku, qty, eta = null }: batchArgs) {
+  constructor({ ref, sku, qty, eta = null }: BatchArgs) {
     this.ref = ref
     this.sku = sku
     this.initialQty = qty
@@ -101,4 +101,4 @@ function allocate(orderline: OrderLine, batches: Array<Batch>) {
   throw new OutOfStock()
 }
 
-export { Batch, OrderLine, allocate, OutOfStock, }
+export { Batch, OrderLine, allocate, OutOfStock, BatchArgs }
