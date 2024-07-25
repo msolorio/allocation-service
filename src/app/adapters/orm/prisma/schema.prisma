@@ -15,18 +15,28 @@ datasource db {
 }
 
 model Batch {
-  id  Int       @id @default(autoincrement())
-  ref String    @unique
-  sku String
-  qty Int
-  eta DateTime?
+  id          Int          @id @default(autoincrement())
+  ref         String       @unique
+  sku         String
+  qty         Int
+  eta         DateTime?
+  allocations Allocation[]
 }
 
 model OrderLine {
-  id       Int    @id @default(autoincrement())
-  orderref String
-  sku      String
-  qty      Int
+  id         Int         @id @default(autoincrement())
+  orderref   String
+  sku        String
+  qty        Int
+  Allocation Allocation?
 
   @@unique([orderref, sku])
+}
+
+model Allocation {
+  id          Int       @id @default(autoincrement())
+  batch       Batch     @relation(fields: [batchid], references: [id])
+  batchid     Int
+  orderline   OrderLine @relation(fields: [orderlineid], references: [id])
+  orderlineid Int       @unique
 }

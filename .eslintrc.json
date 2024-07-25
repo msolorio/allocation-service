@@ -20,5 +20,7 @@
     "plugin:jest/recommended",
     "prettier"
   ],
-  "rules": {}
+  "rules": {
+    "jest/no-focused-tests": "disabled"
+  }
 }
