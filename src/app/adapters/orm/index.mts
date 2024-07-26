@@ -1,6 +1,6 @@
 import { PrismaClient } from '.prisma/client/default.js'
 import { Batch, OrderLine } from '#app/domain/model.mjs'
-import { PrismaBatchPopulated, PrismaOrderLine } from '#app/adapters/orm/types.mjs'
+import { PrismaBatch, PrismaOrderLine } from '#app/adapters/orm/types.mjs'
 
 const generatePrismaClient = function () {
   const prisma = new PrismaClient().$extends({
@@ -8,7 +8,7 @@ const generatePrismaClient = function () {
     result: { // custom methods on query results
       batch: {
         toDomain: {
-          compute(prismaBatch: PrismaBatchPopulated) {
+          compute(prismaBatch: PrismaBatch) {
             return () => {
               const domainBatch = new Batch({
                 ref: prismaBatch.ref,

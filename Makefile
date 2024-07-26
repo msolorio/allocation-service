@@ -14,6 +14,9 @@ up-ci:
 down:
 	docker-compose down
 
+down-remove-volumes:
+	docker-compose down -v
+
 logs:
 	docker-compose logs app | tail -100
 

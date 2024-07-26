@@ -1,15 +1,22 @@
-// import { PrismaClient } from '@prisma/client'
 import { Batch } from '#app/domain/model.mjs'
+import { PrismaClientExtended } from '#app/adapters/orm/types.mjs'
 
 class PrismaRepository {
-  transaction: any
+  prisma: PrismaClientExtended
 
-  constructor({ transaction }) {
-    this.transaction = transaction
+  constructor({ prisma }) {
+    this.prisma = prisma
   }
 
   async add(batch: Batch) {
-    await this.transaction.batch.saveFromDomain(batch)
+    await this.prisma.batch.saveFromDomain(batch)
+  }
+
+  async get(ref: string) {
+    return (await this.prisma.batch.findUnique({
+      where: { ref },
+      include: { allocations: { include: { orderline: true } } }
+    })).toDomain()
   }
 }
 
