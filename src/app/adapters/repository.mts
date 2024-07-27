@@ -1,5 +1,5 @@
 import { Batch } from '#app/domain/model.mjs'
-import { PrismaClientExtended } from '#app/adapters/orm/types.mjs'
+import { PrismaClientExtended } from '#app/types.mjs'
 
 class PrismaRepository {
   prisma: PrismaClientExtended

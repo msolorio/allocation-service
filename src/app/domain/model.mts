@@ -1,4 +1,4 @@
-import { BatchArgs, OrderLineArgs } from '#app/adapters/orm/types.mjs'
+import { BatchArgs, OrderLineArgs } from '#app/types.mjs'
 
 class OrderLine {
   orderref: string

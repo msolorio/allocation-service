@@ -10,7 +10,7 @@ import {
   OrderLineRecord,
   PrismaClientExtended,
   AllocationRecord,
-} from '#app/adapters/orm/types.mjs'
+} from '#app/types.mjs'
 
 async function insertBatch({ prisma, ref, sku, qty, eta }: { prisma: PrismaClientExtended } & BatchArgs) {
   await prisma.$queryRaw`
