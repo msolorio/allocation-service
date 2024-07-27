@@ -33,7 +33,7 @@ const generatePrismaClient = function () {
         toDomain: {
           compute(prismaOrderLine: PrismaOrderLine): () => OrderLine {
             return () => new OrderLine({
-              orderRef: prismaOrderLine.orderref,
+              orderref: prismaOrderLine.orderref,
               sku: prismaOrderLine.sku,
               qty: prismaOrderLine.qty,
             })
@@ -54,7 +54,7 @@ const generatePrismaClient = function () {
                 create: [...domainBatch.allocations].map((orderLine) => ({
                   orderline: {
                     create: {
-                      orderref: orderLine.orderRef,
+                      orderref: orderLine.orderref,
                       sku: orderLine.sku,
                       qty: orderLine.qty
                     }
@@ -69,7 +69,7 @@ const generatePrismaClient = function () {
         async saveFromDomain(domainOrderLine: OrderLine): Promise<PrismaOrderLine> {
           return await prisma.orderLine.create({
             data: {
-              orderref: domainOrderLine.orderRef,
+              orderref: domainOrderLine.orderref,
               sku: domainOrderLine.sku,
               qty: domainOrderLine.qty
             }

@@ -4,7 +4,7 @@ import { PrismaClientExtended } from '#app/adapters/orm/types.mjs'
 class PrismaRepository {
   prisma: PrismaClientExtended
 
-  constructor({ prisma }) {
+  constructor({ prisma }: { prisma: PrismaClientExtended }) {
     this.prisma = prisma
   }
 

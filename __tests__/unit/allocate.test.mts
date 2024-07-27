@@ -11,7 +11,7 @@ describe('allocate', () => {
   it('prefers in-stock batches to shipments', () => {
     const inStockBatch = new Batch({ ref: 'in-stock-batch', sku: 'TABLE', qty: 20, eta: null })
     const ShipmentBatch = new Batch({ ref: 'shipment-batch', sku: 'TABLE', qty: 20, eta: tomorrow })
-    const orderline = new OrderLine({ orderRef: 'order-1', sku: 'TABLE', qty: 2 })
+    const orderline = new OrderLine({ orderref: 'order-1', sku: 'TABLE', qty: 2 })
 
     allocate(orderline, [ShipmentBatch, inStockBatch])
 
@@ -23,7 +23,7 @@ describe('allocate', () => {
     const earliest = new Batch({ ref: 'earliest-batch', sku: 'TABLE', qty: 20, eta: today })
     const medium = new Batch({ ref: 'medium-batch', sku: 'TABLE', qty: 20, eta: tomorrow })
     const latest = new Batch({ ref: 'latest-batch', sku: 'TABLE', qty: 20, eta: later })
-    const orderline = new OrderLine({ orderRef: 'order-1', sku: 'TABLE', qty: 2 })
+    const orderline = new OrderLine({ orderref: 'order-1', sku: 'TABLE', qty: 2 })
 
     allocate(orderline, [medium, earliest, latest])
 
@@ -34,7 +34,7 @@ describe('allocate', () => {
 
   it('returns allocated batch ref', () => {
     const batch = new Batch({ ref: 'batch-1', sku: 'TABLE', qty: 20 })
-    const orderline = new OrderLine({ orderRef: 'order-1', sku: 'TABLE', qty: 2 })
+    const orderline = new OrderLine({ orderref: 'order-1', sku: 'TABLE', qty: 2 })
 
     const result = allocate(orderline, [batch])
 
@@ -43,7 +43,7 @@ describe('allocate', () => {
 
   it('raises out of stock error if cannot allocate', () => {
     const batch = new Batch({ ref: 'batch-1', sku: 'TABLE', qty: 2 })
-    const orderline = new OrderLine({ orderRef: 'order-1', sku: 'TABLE', qty: 3 })
+    const orderline = new OrderLine({ orderref: 'order-1', sku: 'TABLE', qty: 3 })
 
     expect(() => allocate(orderline, [batch])).toThrow(OutOfStock)
   })

@@ -1,8 +1,8 @@
 import { Batch, OrderLine } from '#app/domain/model.mjs'
 
-const createBatchAndLine = function ({ sku, batchQty, lineQty }) {
+const createBatchAndLine = function ({ sku, batchQty, lineQty }: { sku: string, batchQty: number, lineQty: number }) {
   const batch = new Batch({ ref: 'batch-1', sku, qty: batchQty })
-  const orderline = new OrderLine({ orderRef: 'order-1', sku, qty: lineQty })
+  const orderline = new OrderLine({ orderref: 'order-1', sku, qty: lineQty })
 
   return { batch, orderline }
 }
@@ -34,7 +34,7 @@ describe('batch', () => {
 
   it('cannot allocate if skus do not match', () => {
     const batch = new Batch({ ref: 'batch-1', sku: 'LAMP', qty: 2 })
-    const orderline = new OrderLine({ orderRef: 'order-1', sku: 'TABLE', qty: 2 })
+    const orderline = new OrderLine({ orderref: 'order-1', sku: 'TABLE', qty: 2 })
 
     batch.allocate(orderline)
 

@@ -1,34 +1,23 @@
-type OrderLineArgs = {
-  orderRef: string
-  sku: string
-  qty: number
-}
+import { BatchArgs, OrderLineArgs } from '#app/adapters/orm/types.mjs'
 
 class OrderLine {
-  orderRef: string
+  orderref: string
   sku: string
   qty: number
 
-  constructor({ orderRef, sku, qty }: OrderLineArgs) {
-    this.orderRef = orderRef
+  constructor({ orderref, sku, qty }: OrderLineArgs) {
+    this.orderref = orderref
     this.sku = sku
     this.qty = qty
   }
 
   equals(other: OrderLine): boolean {
     return (
-      this.orderRef === other.orderRef
+      this.orderref === other.orderref
       && this.sku === other.sku
       && this.qty === other.qty
     )
   }
-}
-
-type BatchArgs = {
-  ref: string
-  sku: string
-  qty: number
-  eta?: Date | null
 }
 
 class Batch {
