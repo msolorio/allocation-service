@@ -8,15 +8,21 @@ class PrismaRepository {
     this.prisma = prisma
   }
 
-  async add(batch: Batch) {
+  async add(batch: Batch): Promise<void> {
     await this.prisma.batch.saveFromDomain(batch)
   }
 
-  async get(ref: string) {
+  async get(ref: string): Promise<Batch> {
     return (await this.prisma.batch.findUnique({
       where: { ref },
       include: { allocations: { include: { orderline: true } } }
     })).toDomain()
+  }
+
+  async list(): Promise<Array<Batch>> {
+    return (await this.prisma.batch.findMany({
+      include: { allocations: { include: { orderline: true } } }
+    })).map((prismaBatch) => prismaBatch.toDomain())
   }
 }
 

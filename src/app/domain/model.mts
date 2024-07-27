@@ -15,7 +15,7 @@ class OrderLine {
     this.qty = qty
   }
 
-  equals(other: OrderLine) {
+  equals(other: OrderLine): boolean {
     return (
       this.orderRef === other.orderRef
       && this.sku === other.sku
@@ -46,29 +46,29 @@ class Batch {
     this.allocations = new Set()
   }
 
-  get availableQty() {
+  get availableQty(): number {
     return this.initialQty - this.allocatedQty
   }
 
-  allocate(line: OrderLine) {
+  allocate(line: OrderLine): void {
     if (this.canAllocate(line)) {
       this.allocations.add(line)
     }
   }
 
-  deallocate(line: OrderLine) {
+  deallocate(line: OrderLine): void {
     this.allocations.delete(line)
   }
 
-  equals(other: Batch) {
+  equals(other: Batch): boolean {
     return this.ref === other.ref
   }
 
-  canAllocate(line: OrderLine) {
+  canAllocate(line: OrderLine): boolean {
     return line.sku === this.sku && this.availableQty >= line.qty
   }
 
-  private get allocatedQty() {
+  private get allocatedQty(): number {
     return [...this.allocations].reduce((acc, line) => acc + line.qty, 0)
   }
 }
@@ -80,7 +80,7 @@ class OutOfStock extends Error {
   }
 }
 
-function allocate(orderline: OrderLine, batches: Array<Batch>) {
+function allocate(orderline: OrderLine, batches: Array<Batch>): string {
   const sortedBatches = batches.sort((a, b) => {
     if (a.eta === null) {
       return -1

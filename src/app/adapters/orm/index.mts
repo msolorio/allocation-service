@@ -8,7 +8,7 @@ const generatePrismaClient = function () {
     result: { // custom methods on query results
       batch: {
         toDomain: {
-          compute(prismaBatch: PrismaBatch) {
+          compute(prismaBatch: PrismaBatch): () => Batch {
             return () => {
               const domainBatch = new Batch({
                 ref: prismaBatch.ref,
@@ -31,7 +31,7 @@ const generatePrismaClient = function () {
       },
       orderLine: {
         toDomain: {
-          compute(prismaOrderLine: PrismaOrderLine) {
+          compute(prismaOrderLine: PrismaOrderLine): () => OrderLine {
             return () => new OrderLine({
               orderRef: prismaOrderLine.orderref,
               sku: prismaOrderLine.sku,
@@ -43,7 +43,7 @@ const generatePrismaClient = function () {
     },
     model: { // custom methods on prisma.batch and prisma.orderLine
       batch: {
-        async saveFromDomain(domainBatch: Batch) {
+        async saveFromDomain(domainBatch: Batch): Promise<PrismaBatch> {
           return await prisma.batch.create({
             data: {
               ref: domainBatch.ref,
@@ -66,7 +66,7 @@ const generatePrismaClient = function () {
         }
       },
       orderLine: {
-        async saveFromDomain(domainOrderLine: OrderLine) {
+        async saveFromDomain(domainOrderLine: OrderLine): Promise<PrismaOrderLine> {
           return await prisma.orderLine.create({
             data: {
               orderref: domainOrderLine.orderRef,
