@@ -1,7 +1,13 @@
 import { Batch } from '#app/domain/model.mjs'
 import { PrismaClientExtended } from '#app/types.mjs'
 
-class PrismaRepository {
+interface AbstractRepository {
+  add(batch: Batch): Promise<void>
+  get(ref: string): Promise<Batch>
+  list(): Promise<Array<Batch>>
+}
+
+class PrismaRepository implements AbstractRepository {
   prisma: PrismaClientExtended
 
   constructor({ prisma }: { prisma: PrismaClientExtended }) {
