@@ -1,6 +1,6 @@
 import { PrismaClient } from '.prisma/client/default.js'
 import { Batch, OrderLine } from '#app/domain/model.mjs'
-import { PrismaBatch, PrismaOrderLine } from '#app/adapters/orm/types.mjs'
+import { PrismaBatch, PrismaOrderLine } from '#app/types.mjs'
 
 const generatePrismaClient = function () {
   const prisma = new PrismaClient().$extends({

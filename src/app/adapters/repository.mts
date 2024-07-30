@@ -26,9 +26,11 @@ class PrismaRepository implements AbstractRepository {
   }
 
   async list(): Promise<Array<Batch>> {
-    return (await this.prisma.batch.findMany({
+    const prismaBatches: Array<{ toDomain: () => Batch }> = await this.prisma.batch.findMany({
       include: { allocations: { include: { orderline: true } } }
-    })).map((prismaBatch) => prismaBatch.toDomain())
+    })
+
+    return prismaBatches.map((prismaBatch) => prismaBatch.toDomain())
   }
 }
 

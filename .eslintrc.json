@@ -21,6 +21,6 @@
     "prettier"
   ],
   "rules": {
-    "jest/no-focused-tests": "disabled"
+    "jest/no-focused-tests": 0
   }
 }

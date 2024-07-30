@@ -3,10 +3,11 @@ export COMPOSE_DOCKER_CLI_BUILD=1
 export DOCKER_BUILDKIT=1
 
 build:
-	docker-compose build
+	docker-compose build --no-cache
 
 up:
-	docker-compose up -d app && docker-compose exec -d app npm run build:watch
+	docker-compose up -d app
+	docker-compose exec -d app npm run build:watch
 
 up-ci:
 	docker-compose -f docker-compose.ci.yml up -d app

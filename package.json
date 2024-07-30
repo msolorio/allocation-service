@@ -7,7 +7,7 @@
     "node": "20.12.2"
   },
   "scripts": {
-    "start": "node dist/src/app/entrypoints/index.mjs",
+    "start": "node --watch dist/src/app/entrypoints/index.mjs",
     "clean": "rimraf coverage dist tmp",
     "prebuild": "npm run lint",
     "build": "tsc -p tsconfig.json",
