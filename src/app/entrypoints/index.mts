@@ -4,7 +4,7 @@ import morgan from 'morgan'
 import { getApiUrl, getPort } from '#app/config.mjs'
 import { generatePrismaClient } from '#app/adapters/orm/index.mjs'
 import * as repository from '#app/adapters/repository.mjs'
-import { OrderLine, allocate } from '#app/domain/model.mjs'
+import { OrderLine, allocate, OutOfStock } from '#app/domain/model.mjs'
 
 const app = express()
 app.use(bodyParser.json())
@@ -29,7 +29,11 @@ app.post('/allocation', async (req, res) => {
 
     res.status(201).json({ batchref })
   } catch (e) {
-    res.status(500).send('Internal Server Error')
+    if (e instanceof OutOfStock) {
+      res.status(400).send({ message: e.message })
+    } else {
+      res.status(500).send('Internal Server Error')
+    }
   }
 })
 

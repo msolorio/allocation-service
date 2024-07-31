@@ -19,7 +19,7 @@ describe('health endpoint', () => {
 })
 
 describe('POST /allocation', () => {
-  it('returns 201 and the batch ref', async () => {
+  it('returns 201 and the batch ref on allocation', async () => {
     const prisma = generatePrismaClient()
     await insertBatch({ prisma, ref: 'batch-1', sku: 'TABLE', qty: 20, eta: null })
     await insertBatch({ prisma, ref: 'batch-2', sku: 'TABLE', qty: 20, eta: tomorrow })
@@ -64,5 +64,20 @@ describe('POST /allocation', () => {
     })
 
     expect(await response2.json()).toEqual({ batchref: 'batch-2' })
+  })
+
+  it('returns 400 message for out of stock', async () => {
+    const prisma = generatePrismaClient()
+    insertBatch({ prisma, ref: 'batch-1', sku: 'TABLE', qty: 5, eta: null })
+
+    const orderline = { orderref: 'order-1', sku: 'TABLE', qty: 10, }
+    const response = await fetch(`${getApiUrl()}/allocation`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderline),
+    })
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({ message: 'Out of stock' })
   })
 })
