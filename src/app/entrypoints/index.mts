@@ -15,17 +15,22 @@ app.get('/health', (_, res) => {
 })
 
 app.post('/allocation', async (req, res) => {
-  const repo = new repository.PrismaRepository({ prisma: generatePrismaClient() })
-  const batches = await repo.list()
-  const line = new OrderLine({
-    orderref: req.body.orderref,
-    sku: req.body.sku,
-    qty: req.body.qty,
-  })
+  try {
+    const prisma = generatePrismaClient()
+    const repo = new repository.PrismaRepository({ prisma })
+    const line = new OrderLine({
+      orderref: req.body.orderref,
+      sku: req.body.sku,
+      qty: req.body.qty,
+    })
+    const batches = await repo.list()
+    const batchref = allocate(line, batches)
+    await repo.sync()
 
-  const batchref = allocate(line, batches)
-
-  res.status(201).json({ batchref })
+    res.status(201).json({ batchref })
+  } catch (e) {
+    res.status(500).send('Internal Server Error')
+  }
 })
 
 app.listen(getPort(), () => {

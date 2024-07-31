@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
     "target": "es2022",
-    "module": "nodenext",
+    "module": "es2015",
     "lib": [
       "ES2022"
     ],
-    "moduleResolution": "nodenext",
+    "moduleResolution": "bundler",
     "rootDir": ".",
     "outDir": "dist",
     "allowSyntheticDefaultImports": true,

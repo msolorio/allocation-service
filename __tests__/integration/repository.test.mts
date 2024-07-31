@@ -1,42 +1,17 @@
 import { generatePrismaClient } from '#app/adapters/orm/index.mjs'
-import { deleteAllRecords } from '#__tests__/helpers.mjs'
-import { Batch, OrderLine } from '#app/domain/model.mjs'
+import {
+  deleteAllRecords,
+  insertBatch,
+  insertOrderLine,
+  insertAllocation
+} from '#__tests__/helpers.mjs'
+import { Batch, OrderLine, allocate } from '#app/domain/model.mjs'
 import * as repository from '#app/adapters/repository.mjs'
 import {
-  BatchArgs,
-  OrderLineArgs,
-  AllocationArgs,
   BatchRecord,
   OrderLineRecord,
-  PrismaClientExtended,
   AllocationRecord,
 } from '#app/types.mjs'
-
-async function insertBatch({ prisma, ref, sku, qty, eta }: { prisma: PrismaClientExtended } & BatchArgs) {
-  await prisma.$queryRaw`
-    INSERT INTO "Batch" (ref, sku, qty, eta) VALUES (${ref}, ${sku}, ${qty}, ${eta})
-  `
-  const result: Array<{ id: number }> = await prisma.$queryRaw`
-    SELECT id FROM "Batch" WHERE ref = ${ref}
-  `
-  return result[0].id
-}
-
-async function insertOrderLine({ prisma, orderref, sku, qty }: { prisma: PrismaClientExtended } & OrderLineArgs) {
-  await prisma.$queryRaw`
-    INSERT INTO "OrderLine" (orderref, sku, qty) VALUES (${orderref}, ${sku}, ${qty})
-  `
-  const result: Array<{ id: number }> = await prisma.$queryRaw`
-    SELECT id FROM "OrderLine" WHERE orderref = ${orderref} AND sku = ${sku}
-  `
-  return result[0].id
-}
-
-async function insertAllocation({ prisma, batchId, orderlineId }: { prisma: PrismaClientExtended } & AllocationArgs) {
-  await prisma.$queryRaw`
-    INSERT INTO "Allocation" (batchid, orderlineid) VALUES (${batchId}, ${orderlineId})
-  `
-}
 
 beforeEach(async () => await deleteAllRecords())
 
@@ -53,8 +28,8 @@ describe('batch repository', () => {
 
     const prisma = generatePrismaClient()
     const repo = new repository.PrismaRepository({ prisma })
-    await repo.add(batch)
-
+    repo.add(batch)
+    await repo.sync()
 
     const batchRows: Array<BatchRecord> = await prisma.$queryRaw`SELECT * FROM "Batch" WHERE ref = 'batch-1'`
     expect(batchRows).toHaveLength(1)
@@ -102,6 +77,26 @@ describe('batch repository', () => {
     expect(allocated.orderref).toEqual('order-1')
     expect(allocated.sku).toEqual('LAMP')
     expect(allocated.qty).toEqual(12)
+  })
+
+  it('can update a batch with an allocation', async () => {
+    const prisma = generatePrismaClient()
+    const batchid = await insertBatch({ prisma, ref: 'batch-1', sku: 'LAMP', qty: 20, eta: null })
+    const repo = new repository.PrismaRepository({ prisma })
+    const batches = await repo.list()
+
+    expect(batches[0]).toBeInstanceOf(Batch)
+    expect(batches[0].allocations.size).toEqual(0)
+    const line = new OrderLine({ orderref: 'order-1', sku: 'LAMP', qty: 12 })
+
+    allocate(line, batches)
+    await repo.sync()
+
+    const allocations: Array<{ batchid: number }> = await prisma.$queryRaw`SELECT batchid FROM "Allocation"`
+    expect(allocations).toHaveLength(1)
+    expect(allocations[0]).toEqual({ batchid })
+    const orderlines: Array<{ orderref: string }> = await prisma.$queryRaw`SELECT orderref FROM "OrderLine"`
+    expect(orderlines[0]).toEqual({ orderref: 'order-1' })
   })
 
   it('can retrieve list of batches with their allocations', async () => {

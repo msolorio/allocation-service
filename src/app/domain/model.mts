@@ -1,7 +1,7 @@
 import { BatchArgs, OrderLineArgs } from '#app/types.mjs'
 
 class OrderLine {
-  orderref: string
+  readonly orderref: string
   sku: string
   qty: number
 
@@ -21,7 +21,7 @@ class OrderLine {
 }
 
 class Batch {
-  ref: string
+  readonly ref: string
   sku: string
   eta: Date | null
   initialQty: number

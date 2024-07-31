@@ -7,6 +7,7 @@ type OrderLineArgs = {
   qty: number
 }
 type PrismaOrderLine = OrderLineArgs & {
+  id?: number
   toDomain?: () => OrderLine
 }
 
@@ -20,6 +21,7 @@ type BatchArgs = {
 }
 
 type PrismaBatch = BatchArgs & {
+  id?: number
   toDomain?: () => Batch
   allocations?: [{
     orderline: PrismaOrderLine

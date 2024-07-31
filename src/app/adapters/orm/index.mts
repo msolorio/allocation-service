@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client/default.js'
+import { PrismaClient } from '@prisma/client'
 import { Batch, OrderLine } from '#app/domain/model.mjs'
 import { PrismaBatch, PrismaOrderLine } from '#app/types.mjs'
 
@@ -43,36 +43,43 @@ const generatePrismaClient = function () {
     },
     model: { // custom methods on prisma.batch and prisma.orderLine
       batch: {
-        async saveFromDomain(domainBatch: Batch): Promise<PrismaBatch> {
-          return await prisma.batch.create({
-            data: {
-              ref: domainBatch.ref,
-              sku: domainBatch.sku,
-              qty: domainBatch.initialQty,
-              eta: domainBatch.eta,
-              allocations: {
-                create: [...domainBatch.allocations].map((orderLine) => ({
-                  orderline: {
-                    create: {
-                      orderref: orderLine.orderref,
-                      sku: orderLine.sku,
-                      qty: orderLine.qty
-                    }
-                  }
-                }))
-              }
-            }
+        async saveFromDomain(domainBatch: Batch) {
+          const batchData = {
+            ref: domainBatch.ref,
+            sku: domainBatch.sku,
+            qty: domainBatch.initialQty,
+            eta: domainBatch.eta,
+          }
+
+          const { id: batchid } = await prisma.batch.upsert({
+            where: { ref: domainBatch.ref },
+            create: batchData,
+            update: batchData,
           })
+
+          for (const orderLine of domainBatch.allocations) {
+            const { id: orderlineid } = await prisma.orderLine.saveFromDomain(orderLine)
+            const allocationData = { batchid, orderlineid }
+            await prisma.allocation.upsert({
+              where: { batchid: batchid, orderlineid: orderlineid },
+              create: allocationData,
+              update: allocationData,
+            })
+          }
         }
       },
       orderLine: {
         async saveFromDomain(domainOrderLine: OrderLine): Promise<PrismaOrderLine> {
-          return await prisma.orderLine.create({
-            data: {
-              orderref: domainOrderLine.orderref,
-              sku: domainOrderLine.sku,
-              qty: domainOrderLine.qty
-            }
+          const orderlineData = {
+            orderref: domainOrderLine.orderref,
+            sku: domainOrderLine.sku,
+            qty: domainOrderLine.qty
+          }
+
+          return await prisma.orderLine.upsert({
+            where: { orderref_sku: { orderref: domainOrderLine.orderref, sku: domainOrderLine.sku } },
+            create: orderlineData,
+            update: orderlineData
           })
         }
       }
