@@ -78,6 +78,18 @@ describe('POST /allocation', () => {
     })
 
     expect(response.status).toBe(400)
-    expect(await response.json()).toEqual({ message: 'Out of stock' })
+    expect(await response.json()).toEqual({ message: 'Out of stock for sku: TABLE' })
+  })
+
+  it('returns 400 for invalid sku', async () => {
+    const orderline = { orderref: 'order-1', sku: 'UNKNOWN_SKU', qty: 10, }
+    const response = await fetch(`${getApiUrl()}/allocation`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderline),
+    })
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({ message: `Invalid sku: UNKNOWN_SKU` })
   })
 })

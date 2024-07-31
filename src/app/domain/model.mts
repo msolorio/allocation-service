@@ -63,8 +63,8 @@ class Batch {
 }
 
 class OutOfStock extends Error {
-  constructor() {
-    super('Out of stock')
+  constructor(message?: string) {
+    super(message)
     this.name = 'OutOfStock'
   }
 }
@@ -87,7 +87,7 @@ function allocate(orderline: OrderLine, batches: Array<Batch>): string {
     }
   }
 
-  throw new OutOfStock()
+  throw new OutOfStock(`Out of stock for sku: ${orderline.sku}`)
 }
 
 export { Batch, OrderLine, allocate, OutOfStock, BatchArgs }
