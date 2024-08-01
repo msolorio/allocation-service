@@ -68,7 +68,7 @@ describe('POST /allocation', () => {
 
   it('returns 400 message for out of stock', async () => {
     const prisma = generatePrismaClient()
-    insertBatch({ prisma, ref: 'batch-1', sku: 'TABLE', qty: 5, eta: null })
+    await insertBatch({ prisma, ref: 'batch-1', sku: 'TABLE', qty: 5, eta: null })
 
     const orderline = { orderref: 'order-1', sku: 'TABLE', qty: 10, }
     const response = await fetch(`${getApiUrl()}/allocation`, {

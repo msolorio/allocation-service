@@ -5,6 +5,7 @@ interface AbstractRepository {
   add(batch: Batch): void
   get(ref: string): Promise<Batch>
   list(): Promise<Array<Batch>>
+  sync(): Promise<void>
 }
 
 class PrismaRepository implements AbstractRepository {
@@ -21,6 +22,13 @@ class PrismaRepository implements AbstractRepository {
   }
 
   async get(ref: string): Promise<Batch> {
+    if (this.seen.size > 0) {
+      const batch = [...this.seen].find((b) => b.ref === ref)
+      if (batch) {
+        return batch
+      }
+    }
+
     const batch = (await this.prisma.batch.findUnique({
       where: { ref },
       include: { allocations: { include: { orderline: true } } }
@@ -51,4 +59,4 @@ class PrismaRepository implements AbstractRepository {
   }
 }
 
-export { PrismaRepository }
+export { AbstractRepository, PrismaRepository }

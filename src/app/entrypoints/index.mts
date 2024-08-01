@@ -29,18 +29,17 @@ app.post('/allocation', async (req, res) => {
       sku: req.body.sku,
       qty: req.body.qty,
     })
-
     if (!isValidSku(line.sku, batches)) {
-      res.status(400).json({ message: `Invalid sku: ${line.sku}` })
+      return res.status(400).json({ message: `Invalid sku: ${line.sku}` })
     }
     const batchref = allocate(line, batches)
     await repo.sync()
-    res.status(201).json({ batchref })
+    return res.status(201).json({ batchref })
   } catch (e) {
     if (e instanceof OutOfStock) {
-      res.status(400).send({ message: e.message })
+      return res.status(400).send({ message: e.message })
     } else {
-      res.status(500).send('Internal Server Error')
+      return res.status(500).send('Internal Server Error')
     }
   }
 })
