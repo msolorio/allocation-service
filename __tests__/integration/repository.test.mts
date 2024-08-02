@@ -68,6 +68,9 @@ describe('batch repository', () => {
 
     const batch = await repo.get('batch-1')
 
+    if (batch === null) {
+      throw new Error('Batch not found')
+    }
     expect(batch.ref).toEqual('batch-1')
     expect(batch.sku).toEqual('LAMP')
     expect(batch.initialQty).toEqual(20)
@@ -77,6 +80,14 @@ describe('batch repository', () => {
     expect(allocated.orderref).toEqual('order-1')
     expect(allocated.sku).toEqual('LAMP')
     expect(allocated.qty).toEqual(12)
+  })
+
+  it('returns null when getting a batch that does not exist', async () => {
+    const repo = new repository.PrismaRepository({ prisma: generatePrismaClient() })
+
+    const batch = await repo.get('batch-1')
+
+    expect(batch).toBeNull()
   })
 
   it('can update a batch with an allocation', async () => {

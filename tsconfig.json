@@ -20,7 +20,7 @@
     "noUnusedParameters": true,
     "noImplicitAny": true,
     "noImplicitThis": false,
-    "strictNullChecks": false,
+    "strictNullChecks": true,
     "strict": true,
     "allowJs": true,
     "baseUrl": ".",

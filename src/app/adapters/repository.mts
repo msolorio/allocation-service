@@ -3,7 +3,7 @@ import { PrismaClientExtended } from '#app/types.mjs'
 
 interface AbstractRepository {
   add(batch: Batch): void
-  get(ref: string): Promise<Batch>
+  get(ref: string): Promise<Batch | null>
   list(): Promise<Array<Batch>>
   sync(): Promise<void>
 }
@@ -21,20 +21,22 @@ class PrismaRepository implements AbstractRepository {
     this.seen.add(batch)
   }
 
-  async get(ref: string): Promise<Batch> {
+  async get(ref: string): Promise<Batch | null> {
     if (this.seen.size > 0) {
       const batch = [...this.seen].find((b) => b.ref === ref)
       if (batch) {
         return batch
       }
     }
-
-    const batch = (await this.prisma.batch.findUnique({
+    const prismaBatch = (await this.prisma.batch.findUnique({
       where: { ref },
       include: { allocations: { include: { orderline: true } } }
-    })).toDomain()
+    }))
+    if (prismaBatch === null) {
+      return null
+    }
+    const batch = prismaBatch.toDomain()
     this.seen.add(batch)
-
     return batch
   }
 

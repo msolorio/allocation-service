@@ -1,6 +1,5 @@
 import { getApiUrl } from '#app/config.mjs'
-import { deleteAllRecords, insertBatch } from '#__tests__/helpers.mjs'
-import { generatePrismaClient } from '#app/adapters/orm/index.mjs'
+import { deleteAllRecords, fromJsDateToStringDate } from '#__tests__/helpers.mjs'
 
 const today = new Date()
 const tomorrow = new Date(today)
@@ -18,11 +17,36 @@ describe('health endpoint', () => {
   })
 })
 
+describe('POST /batch', () => {
+  it('persists a batch', async () => {
+    const response = await fetch(`${getApiUrl()}/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref: 'batch-1', sku: 'TABLE', qty: 10, eta: fromJsDateToStringDate(today) }),
+    })
+
+    expect(response.status).toBe(201)
+    expect(await response.json()).toEqual({
+      ref: 'batch-1',
+      sku: 'TABLE',
+      qty: 10,
+      eta: fromJsDateToStringDate(today)
+    })
+  })
+})
+
 describe('POST /allocation', () => {
   it('persists allocations', async () => {
-    const prisma = generatePrismaClient()
-    await insertBatch({ prisma, ref: 'batch-1', sku: 'TABLE', qty: 5, eta: null })
-    await insertBatch({ prisma, ref: 'batch-2', sku: 'TABLE', qty: 5, eta: today })
+    await fetch(`${getApiUrl()}/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref: 'batch-1', sku: 'TABLE', qty: 5, eta: null }),
+    })
+    await fetch(`${getApiUrl()}/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref: 'batch-2', sku: 'TABLE', qty: 5, eta: fromJsDateToStringDate(today) }),
+    })
 
     const line1 = { orderref: 'order-1', sku: 'TABLE', qty: 5, }
     const line2 = { orderref: 'order-2', sku: 'TABLE', qty: 5, }
@@ -46,8 +70,11 @@ describe('POST /allocation', () => {
   })
 
   it('unhappy path returns 400 status code', async () => {
-    const prisma = generatePrismaClient()
-    await insertBatch({ prisma, ref: 'batch-1', sku: 'TABLE', qty: 5, eta: null })
+    await fetch(`${getApiUrl()}/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref: 'batch-1', sku: 'TABLE', qty: 5, eta: null }),
+    })
 
     const orderline = { orderref: 'order-1', sku: 'TABLE', qty: 10, }
     const response = await fetch(`${getApiUrl()}/allocation`, {

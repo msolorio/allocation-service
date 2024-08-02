@@ -4,7 +4,6 @@ import morgan from 'morgan'
 import { getApiUrl, getPort } from '#app/config.mjs'
 import { generatePrismaClient } from '#app/adapters/orm/index.mjs'
 import * as repository from '#app/adapters/repository.mjs'
-import { OrderLine } from '#app/domain/model.mjs'
 import * as services from '#app/services/index.mjs'
 import { BadRequestError } from '#app/errors.mjs'
 
@@ -16,15 +15,23 @@ app.get('/health', (_, res) => {
   res.status(200).send('OK')
 })
 
+app.post('/batch', async (req, res) => {
+  try {
+    const repo = new repository.PrismaRepository({ prisma: generatePrismaClient() })
+    const { ref, sku, qty, eta } = req.body
+    const etaDate = eta ? new Date(eta) : null
+    await services.addBatch({ ref, sku, qty, eta: etaDate, repo })
+    return res.status(201).json({ ref, sku, qty, eta })
+  } catch (e) {
+    return res.status(500).json({ message: 'Internal Server Error' })
+  }
+})
+
 app.post('/allocation', async (req, res) => {
   try {
     const repo = new repository.PrismaRepository({ prisma: generatePrismaClient() })
-    const line = new OrderLine({
-      orderref: req.body.orderref,
-      sku: req.body.sku,
-      qty: req.body.qty,
-    })
-    const batchref = await services.allocate(line, repo)
+    const { orderref, sku, qty } = req.body
+    const batchref = await services.allocate({ orderref, sku, qty, repo })
     return res.status(201).json({ batchref })
   } catch (e) {
     if (e instanceof BadRequestError) {

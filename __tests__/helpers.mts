@@ -16,7 +16,7 @@ async function deleteAllRecords(): Promise<void> {
   await prisma.$disconnect()
 }
 
-function fromJsDateToSqlDate(date: Date): string {
+function fromJsDateToStringDate(date: Date): string {
   return date.toISOString().split('T')[0]
 }
 
@@ -48,7 +48,7 @@ async function insertAllocation({ prisma, batchId, orderlineId }: { prisma: Pris
 
 export {
   deleteAllRecords,
-  fromJsDateToSqlDate,
+  fromJsDateToStringDate,
   insertBatch,
   insertOrderLine,
   insertAllocation,
