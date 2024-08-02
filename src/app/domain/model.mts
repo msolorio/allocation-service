@@ -1,4 +1,5 @@
 import { BatchArgs, OrderLineArgs } from '#app/types.mjs'
+import { OutOfStock } from '#app/errors.mjs'
 
 class OrderLine {
   readonly orderref: string
@@ -59,13 +60,6 @@ class Batch {
 
   private get allocatedQty(): number {
     return [...this.allocations].reduce((acc, line) => acc + line.qty, 0)
-  }
-}
-
-class OutOfStock extends Error {
-  constructor(message?: string) {
-    super(message)
-    this.name = 'OutOfStock'
   }
 }
 

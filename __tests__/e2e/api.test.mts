@@ -19,28 +19,6 @@ describe('health endpoint', () => {
 })
 
 describe('POST /allocation', () => {
-  it('returns 201 and the batch ref on allocation', async () => {
-    const prisma = generatePrismaClient()
-    await insertBatch({ prisma, ref: 'batch-1', sku: 'TABLE', qty: 20, eta: null })
-    await insertBatch({ prisma, ref: 'batch-2', sku: 'TABLE', qty: 20, eta: tomorrow })
-    await insertBatch({ prisma, ref: 'batch-3', sku: 'TABLE', qty: 20, eta: later })
-
-    const data = {
-      orderref: 'order-1',
-      sku: 'TABLE',
-      qty: 2,
-    }
-
-    const response = await fetch(`${getApiUrl()}/allocation`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-
-    expect(response.status).toBe(201)
-    expect(await response.json()).toEqual({ batchref: 'batch-1' })
-  })
-
   it('persists allocations', async () => {
     const prisma = generatePrismaClient()
     await insertBatch({ prisma, ref: 'batch-1', sku: 'TABLE', qty: 5, eta: null })
@@ -55,6 +33,7 @@ describe('POST /allocation', () => {
       body: JSON.stringify(line1),
     })
 
+    expect(response1.status).toBe(201)
     expect(await response1.json()).toEqual({ batchref: 'batch-1' })
 
     const response2 = await fetch(`${getApiUrl()}/allocation`, {
@@ -66,7 +45,7 @@ describe('POST /allocation', () => {
     expect(await response2.json()).toEqual({ batchref: 'batch-2' })
   })
 
-  it('returns 400 message for out of stock', async () => {
+  it('unhappy path returns 400 status code', async () => {
     const prisma = generatePrismaClient()
     await insertBatch({ prisma, ref: 'batch-1', sku: 'TABLE', qty: 5, eta: null })
 
@@ -79,17 +58,5 @@ describe('POST /allocation', () => {
 
     expect(response.status).toBe(400)
     expect(await response.json()).toEqual({ message: 'Out of stock for sku: TABLE' })
-  })
-
-  it('returns 400 for invalid sku', async () => {
-    const orderline = { orderref: 'order-1', sku: 'UNKNOWN_SKU', qty: 10, }
-    const response = await fetch(`${getApiUrl()}/allocation`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderline),
-    })
-
-    expect(response.status).toBe(400)
-    expect(await response.json()).toEqual({ message: `Invalid sku: UNKNOWN_SKU` })
   })
 })

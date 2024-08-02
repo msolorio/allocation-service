@@ -1,12 +1,6 @@
 import * as domain from '#app/domain/model.mjs'
 import { AbstractRepository } from '#app/adapters/repository.mjs'
-
-class InvalidSku extends Error {
-  constructor(message?: string) {
-    super(message)
-    this.name = 'InvalidSku'
-  }
-}
+import { InvalidSku } from '#app/errors.mjs'
 
 const isValidSku = function (sku: string, batches: Array<domain.Batch>): boolean {
   return batches.some((batch) => batch.sku === sku)
