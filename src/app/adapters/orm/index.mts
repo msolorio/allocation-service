@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { Batch, OrderLine } from '#app/domain/model.mjs'
-import { PrismaBatch, PrismaOrderLine } from '#app/types.mjs'
+import { PrismaBatch, PrismaOrderLine, OrderLineArgs } from '#app/types.mjs'
 
 const generatePrismaClient = function () {
   const prisma = new PrismaClient().$extends({
@@ -31,7 +31,7 @@ const generatePrismaClient = function () {
       },
       orderLine: {
         toDomain: {
-          compute(prismaOrderLine: PrismaOrderLine): () => OrderLine {
+          compute(prismaOrderLine: OrderLineArgs): () => OrderLine {
             return () => new OrderLine({
               orderref: prismaOrderLine.orderref,
               sku: prismaOrderLine.sku,
@@ -59,12 +59,14 @@ const generatePrismaClient = function () {
 
           for (const orderLine of domainBatch.allocations) {
             const { id: orderlineid } = await prisma.orderLine.saveFromDomain(orderLine)
-            const allocationData = { batchid, orderlineid }
-            await prisma.allocation.upsert({
-              where: { batchid: batchid, orderlineid: orderlineid },
-              create: allocationData,
-              update: allocationData,
-            })
+            if (orderlineid) {
+              const allocationData = { batchid, orderlineid }
+              await prisma.allocation.upsert({
+                where: { batchid: batchid, orderlineid: orderlineid },
+                create: allocationData,
+                update: allocationData,
+              })
+            }
           }
         }
       },

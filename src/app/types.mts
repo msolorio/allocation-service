@@ -8,7 +8,7 @@ type OrderLineArgs = {
 }
 type PrismaOrderLine = OrderLineArgs & {
   id?: number
-  toDomain?: () => OrderLine
+  toDomain: () => OrderLine
 }
 
 type OrderLineRecord = OrderLineArgs & { id: number }

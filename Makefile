@@ -21,6 +21,9 @@ down-remove-volumes:
 logs:
 	docker-compose logs app | tail -100
 
+ts-build:
+	docker-compose run --rm --no-deps --entrypoint='npm run build' app
+
 test:
 	docker-compose run --rm --no-deps --entrypoint='npm test' app
 
