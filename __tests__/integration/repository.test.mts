@@ -1,4 +1,4 @@
-import { generatePrismaClient } from '#app/adapters/orm/index.mjs'
+import { generatedPrismaClient as prisma } from '#app/adapters/orm/index.mjs'
 import {
   deleteAllRecords,
   insertBatch,
@@ -25,8 +25,6 @@ describe('batch repository', () => {
     })
     batch.allocations = new Set([new OrderLine({ orderref: 'order-3', sku: 'LAMP', qty: 12 })])
 
-
-    const prisma = generatePrismaClient()
     const repo = new repository.PrismaRepository({ prisma })
     repo.add(batch)
     await repo.sync()
@@ -60,7 +58,7 @@ describe('batch repository', () => {
   })
 
   it('can retrieve a batch with its allocation', async () => {
-    const prisma = generatePrismaClient()
+
     const batchId = await insertBatch({ prisma, ref: 'batch-1', sku: 'LAMP', qty: 20, eta: null })
     const orderlineId = await insertOrderLine({ prisma, orderref: 'order-1', sku: 'LAMP', qty: 12 })
     await insertAllocation({ prisma, batchId, orderlineId })
@@ -83,7 +81,7 @@ describe('batch repository', () => {
   })
 
   it('returns null when getting a batch that does not exist', async () => {
-    const repo = new repository.PrismaRepository({ prisma: generatePrismaClient() })
+    const repo = new repository.PrismaRepository({ prisma })
 
     const batch = await repo.get('batch-1')
 
@@ -91,7 +89,7 @@ describe('batch repository', () => {
   })
 
   it('can update a batch with an allocation', async () => {
-    const prisma = generatePrismaClient()
+
     const batchid = await insertBatch({ prisma, ref: 'batch-1', sku: 'LAMP', qty: 20, eta: null })
     const repo = new repository.PrismaRepository({ prisma })
     const batches = await repo.list()
@@ -111,7 +109,7 @@ describe('batch repository', () => {
   })
 
   it('can retrieve list of batches with their allocations', async () => {
-    const prisma = generatePrismaClient()
+
     const batchId1 = await insertBatch({ prisma, ref: 'batch-1', sku: 'LAMP', qty: 20, eta: null })
     await insertBatch({ prisma, ref: 'batch-2', sku: 'SOFA', qty: 20, eta: null })
     const orderlineId1 = await insertOrderLine({ prisma, orderref: 'order-1', sku: 'LAMP', qty: 12 })

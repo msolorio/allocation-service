@@ -1,4 +1,4 @@
-import { generatePrismaClient } from '#app/adapters/orm/index.mjs'
+import { generatedPrismaClient as prisma } from '#app/adapters/orm/index.mjs'
 import {
   BatchArgs,
   OrderLineArgs,
@@ -7,7 +7,6 @@ import {
 } from '#app/types.mjs'
 
 async function deleteAllRecords(): Promise<void> {
-  const prisma = generatePrismaClient()
   try {
     await prisma.$executeRaw`TRUNCATE TABLE "Allocation", "Batch", "OrderLine" CASCADE;`
   } catch (error) {

@@ -1,5 +1,5 @@
 import { Batch, OrderLine } from '#app/domain/model.mjs'
-import { generatePrismaClient } from '#app/adapters/orm/index.mjs'
+
 
 type OrderLineArgs = {
   orderref: string
@@ -37,7 +37,20 @@ type AllocationArgs = {
 
 type AllocationRecord = AllocationArgs & { id: number }
 
-type PrismaClientExtended = ReturnType<typeof generatePrismaClient>
+
+type PrismaClientExtended = any // temporarily setting until fixed
+
+interface AnyFunction {
+  (...args: Array<any>): any
+}
+
+type PrismaTransactionalClient = Parameters<
+  AnyFunction & Parameters< // prisma doesn't infer the type of the callback
+    PrismaClientExtended['$transaction']
+  >[0]
+>[0]
+
+type RepositoryPrismaClient = PrismaClientExtended | PrismaTransactionalClient
 
 export {
   PrismaBatch,
@@ -48,5 +61,7 @@ export {
   OrderLineRecord,
   AllocationArgs,
   AllocationRecord,
-  PrismaClientExtended
+  PrismaClientExtended,
+  PrismaTransactionalClient,
+  RepositoryPrismaClient,
 }

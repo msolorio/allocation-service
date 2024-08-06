@@ -2,7 +2,7 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import morgan from 'morgan'
 import { getApiUrl, getPort } from '#app/config.mjs'
-import { generatePrismaClient } from '#app/adapters/orm/index.mjs'
+import { generatedPrismaClient as prisma } from '#app/adapters/orm/index.mjs'
 import * as repository from '#app/adapters/repository.mjs'
 import * as services from '#app/services/index.mjs'
 import { BadRequestError } from '#app/errors.mjs'
@@ -17,7 +17,7 @@ app.get('/health', (_, res) => {
 
 app.post('/batch', async (req, res) => {
   try {
-    const repo = new repository.PrismaRepository({ prisma: generatePrismaClient() })
+    const repo = new repository.PrismaRepository({ prisma })
     const { ref, sku, qty, eta } = req.body
     const etaDate = eta ? new Date(eta) : null
     await services.addBatch({ ref, sku, qty, eta: etaDate, repo })
@@ -29,7 +29,7 @@ app.post('/batch', async (req, res) => {
 
 app.post('/allocation', async (req, res) => {
   try {
-    const repo = new repository.PrismaRepository({ prisma: generatePrismaClient() })
+    const repo = new repository.PrismaRepository({ prisma })
     const { orderref, sku, qty } = req.body
     const batchref = await services.allocate({ orderref, sku, qty, repo })
     return res.status(201).json({ batchref })

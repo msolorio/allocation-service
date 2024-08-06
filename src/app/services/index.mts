@@ -8,7 +8,7 @@ async function addBatch({ ref, sku, qty, eta = null, repo }:
 ): Promise<void> {
   const batch = new domain.Batch({ ref, sku, qty, eta })
   repo.add(batch)
-  repo.sync()
+  await repo.sync()
 }
 
 const isValidSku = function (sku: string, batches: Array<domain.Batch>): boolean {
@@ -24,7 +24,7 @@ async function allocate({ orderref, sku, qty, repo }:
     throw new InvalidSku(`Invalid sku: ${line.sku}`)
   }
   const batchref = domain.allocate(line, batches)
-  repo.sync()
+  await repo.sync()
 
   return batchref
 }

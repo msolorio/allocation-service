@@ -21,6 +21,7 @@
     "prettier"
   ],
   "rules": {
-    "jest/no-focused-tests": 0
+    "jest/no-focused-tests": 0,
+    "@typescript-eslint/no-explicit-any": 0
   }
 }

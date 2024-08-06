@@ -1,5 +1,5 @@
 import { Batch } from '#app/domain/model.mjs'
-import { PrismaClientExtended } from '#app/types.mjs'
+import { RepositoryPrismaClient } from '#app/types.mjs'
 
 interface AbstractRepository {
   add(batch: Batch): void
@@ -9,10 +9,10 @@ interface AbstractRepository {
 }
 
 class PrismaRepository implements AbstractRepository {
-  private prisma: PrismaClientExtended
+  private prisma: RepositoryPrismaClient
   private seen: Set<Batch>
 
-  constructor({ prisma }: { prisma: PrismaClientExtended }) {
+  constructor({ prisma }: { prisma: RepositoryPrismaClient }) {
     this.prisma = prisma
     this.seen = new Set()
   }
@@ -57,7 +57,7 @@ class PrismaRepository implements AbstractRepository {
   }
 
   private async save(batch: Batch) {
-    await this.prisma.batch.saveFromDomain(batch)
+    await this.prisma.batch.saveFromDomain(this.prisma, batch)
   }
 }
 

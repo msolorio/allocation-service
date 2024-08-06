@@ -1,9 +1,10 @@
 import { PrismaClient } from '@prisma/client'
 import { Batch, OrderLine } from '#app/domain/model.mjs'
-import { PrismaBatch, PrismaOrderLine, OrderLineArgs } from '#app/types.mjs'
+import { PrismaBatch, PrismaOrderLine, OrderLineArgs, RepositoryPrismaClient } from '#app/types.mjs'
 
 const generatePrismaClient = function () {
-  const prisma = new PrismaClient().$extends({
+  const prismaClient = new PrismaClient()
+  const prisma = prismaClient.$extends({
     name: 'prismaClient',
     result: { // custom methods on query results
       batch: {
@@ -43,7 +44,7 @@ const generatePrismaClient = function () {
     },
     model: { // custom methods on prisma.batch and prisma.orderLine
       batch: {
-        async saveFromDomain(domainBatch: Batch) {
+        async saveFromDomain(prisma: RepositoryPrismaClient, domainBatch: Batch) {
           const batchData = {
             ref: domainBatch.ref,
             sku: domainBatch.sku,
@@ -58,7 +59,7 @@ const generatePrismaClient = function () {
           })
 
           for (const orderLine of domainBatch.allocations) {
-            const { id: orderlineid } = await prisma.orderLine.saveFromDomain(orderLine)
+            const { id: orderlineid } = await prisma.orderLine.saveFromDomain(prisma, orderLine)
             if (orderlineid) {
               const allocationData = { batchid, orderlineid }
               await prisma.allocation.upsert({
@@ -71,7 +72,7 @@ const generatePrismaClient = function () {
         }
       },
       orderLine: {
-        async saveFromDomain(domainOrderLine: OrderLine): Promise<PrismaOrderLine> {
+        async saveFromDomain(prisma: RepositoryPrismaClient, domainOrderLine: OrderLine): Promise<PrismaOrderLine> {
           const orderlineData = {
             orderref: domainOrderLine.orderref,
             sku: domainOrderLine.sku,
@@ -91,4 +92,6 @@ const generatePrismaClient = function () {
   return prisma
 }
 
-export { generatePrismaClient }
+const generatedPrismaClient = generatePrismaClient()
+
+export { generatedPrismaClient, generatePrismaClient }
