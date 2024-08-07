@@ -1,10 +1,10 @@
 import { PrismaClient } from '@prisma/client'
 import { Batch, OrderLine } from '#app/domain/model.mjs'
-import { PrismaBatch, PrismaOrderLine, OrderLineArgs, RepositoryPrismaClient } from '#app/types.mjs'
+import { PrismaBatch, OrderLineRecord, OrderLineArgs, PrismaSaveFromDomainClient } from '#app/types.mjs'
 
 const generatePrismaClient = function () {
   const prismaClient = new PrismaClient()
-  const prisma = prismaClient.$extends({
+  return prismaClient.$extends({
     name: 'prismaClient',
     result: { // custom methods on query results
       batch: {
@@ -44,7 +44,7 @@ const generatePrismaClient = function () {
     },
     model: { // custom methods on prisma.batch and prisma.orderLine
       batch: {
-        async saveFromDomain(prisma: RepositoryPrismaClient, domainBatch: Batch) {
+        async saveFromDomain(prisma: PrismaSaveFromDomainClient, domainBatch: Batch) {
           const batchData = {
             ref: domainBatch.ref,
             sku: domainBatch.sku,
@@ -72,7 +72,7 @@ const generatePrismaClient = function () {
         }
       },
       orderLine: {
-        async saveFromDomain(prisma: RepositoryPrismaClient, domainOrderLine: OrderLine): Promise<PrismaOrderLine> {
+        async saveFromDomain(prisma: PrismaSaveFromDomainClient, domainOrderLine: OrderLine): Promise<OrderLineRecord> {
           const orderlineData = {
             orderref: domainOrderLine.orderref,
             sku: domainOrderLine.sku,
@@ -88,8 +88,6 @@ const generatePrismaClient = function () {
       }
     }
   })
-
-  return prisma
 }
 
 const generatedPrismaClient = generatePrismaClient()

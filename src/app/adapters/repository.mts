@@ -1,5 +1,5 @@
 import { Batch } from '#app/domain/model.mjs'
-import { RepositoryPrismaClient } from '#app/types.mjs'
+import { RepositoryPrismaClient, PrismaSaveFromDomainClient } from '#app/types.mjs'
 
 interface AbstractRepository {
   add(batch: Batch): void
@@ -57,7 +57,8 @@ class PrismaRepository implements AbstractRepository {
   }
 
   private async save(batch: Batch) {
-    await this.prisma.batch.saveFromDomain(this.prisma, batch)
+    const prismaClient = this.prisma as unknown as PrismaSaveFromDomainClient
+    await this.prisma.batch.saveFromDomain(prismaClient, batch)
   }
 }
 

@@ -1,17 +1,16 @@
 import { Batch, OrderLine } from '#app/domain/model.mjs'
-
+import { generatePrismaClient } from '#app/adapters/orm/index.mjs'
+import { PrismaClient } from '@prisma/client'
 
 type OrderLineArgs = {
   orderref: string
   sku: string
   qty: number
 }
-type PrismaOrderLine = OrderLineArgs & {
-  id?: number
-  toDomain: () => OrderLine
-}
 
 type OrderLineRecord = OrderLineArgs & { id: number }
+type PrismaOrderLine = OrderLineRecord & { toDomain: () => OrderLine }
+
 
 type BatchArgs = {
   ref: string
@@ -20,15 +19,15 @@ type BatchArgs = {
   eta?: Date | null
 }
 
-type PrismaBatch = BatchArgs & {
-  id?: number
+type BatchRecord = BatchArgs & { id: number }
+
+type PrismaBatch = BatchRecord & {
   toDomain?: () => Batch
   allocations?: [{
     orderline: PrismaOrderLine
   }]
 }
 
-type BatchRecord = BatchArgs & { id: number }
 
 type AllocationArgs = {
   batchId: number
@@ -37,20 +36,24 @@ type AllocationArgs = {
 
 type AllocationRecord = AllocationArgs & { id: number }
 
-
-type PrismaClientExtended = any // temporarily setting until fixed
-
-interface AnyFunction {
-  (...args: Array<any>): any
-}
+type PrismaClientExtended = ReturnType<typeof generatePrismaClient>
 
 type PrismaTransactionalClient = Parameters<
-  AnyFunction & Parameters< // prisma doesn't infer the type of the callback
+  Parameters<
     PrismaClientExtended['$transaction']
   >[0]
 >[0]
 
 type RepositoryPrismaClient = PrismaClientExtended | PrismaTransactionalClient
+
+type PrismaSaveFromDomainClient = PrismaClient & {
+  batch: {
+    saveFromDomain: (prisma: PrismaSaveFromDomainClient, domainBatch: Batch) => Promise<void>
+  }
+  orderLine: {
+    saveFromDomain: (prisma: PrismaSaveFromDomainClient, domainOrderLine: OrderLine) => Promise<OrderLineRecord>
+  }
+}
 
 export {
   PrismaBatch,
@@ -64,4 +67,5 @@ export {
   PrismaClientExtended,
   PrismaTransactionalClient,
   RepositoryPrismaClient,
+  PrismaSaveFromDomainClient,
 }
