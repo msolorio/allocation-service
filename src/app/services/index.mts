@@ -1,32 +1,36 @@
 import * as domain from '#app/domain/model.mjs'
-import { AbstractRepository } from '#app/adapters/repository.mjs'
+import { AbstractUnitOfWork } from '#app/adapters/unitOfWork.mjs'
 import { InvalidSku } from '#app/errors.mjs'
 import { BatchArgs, OrderLineArgs } from '#app/types.mjs'
 
-async function addBatch({ ref, sku, qty, eta = null, repo }:
-  BatchArgs & { repo: AbstractRepository }
+async function addBatch({ ref, sku, qty, eta = null, uow }:
+  BatchArgs & { uow: AbstractUnitOfWork }
 ): Promise<void> {
-  const batch = new domain.Batch({ ref, sku, qty, eta })
-  repo.add(batch)
-  await repo.sync()
+  await uow.transaction(async () => {
+    const batch = new domain.Batch({ ref, sku, qty, eta })
+    uow.batches.add(batch)
+    await uow.commit()
+  })
 }
 
 const isValidSku = function (sku: string, batches: Array<domain.Batch>): boolean {
   return batches.some((batch) => batch.sku === sku)
 }
 
-async function allocate({ orderref, sku, qty, repo }:
-  OrderLineArgs & { repo: AbstractRepository }
+async function allocate({ orderref, sku, qty, uow }:
+  OrderLineArgs & { uow: AbstractUnitOfWork }
 ): Promise<string> {
-  const line = new domain.OrderLine({ orderref, sku, qty })
-  const batches = await repo.list()
-  if (!isValidSku(line.sku, batches)) {
-    throw new InvalidSku(`Invalid sku: ${line.sku}`)
-  }
-  const batchref = domain.allocate(line, batches)
-  await repo.sync()
+  return await uow.transaction(async () => {
+    const line = new domain.OrderLine({ orderref, sku, qty })
+    const batches = await uow.batches.list()
+    if (!isValidSku(line.sku, batches)) {
+      throw new InvalidSku(`Invalid sku: ${line.sku}`)
+    }
+    const batchref = domain.allocate(line, batches)
+    await uow.commit()
 
-  return batchref
+    return batchref
+  })
 }
 
 export { addBatch, allocate, InvalidSku }

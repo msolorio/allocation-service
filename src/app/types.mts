@@ -38,11 +38,9 @@ type AllocationRecord = AllocationArgs & { id: number }
 
 type PrismaClientExtended = ReturnType<typeof generatePrismaClient>
 
-type PrismaTransactionalClient = Parameters<
-  Parameters<
-    PrismaClientExtended['$transaction']
-  >[0]
->[0]
+type $transactionFirstArg = Parameters<PrismaClientExtended['$transaction']>[0]
+type Callback = $transactionFirstArg extends (...args: any) => any ? $transactionFirstArg : never
+type PrismaTransactionalClient = Parameters<Callback>[0]
 
 type RepositoryPrismaClient = PrismaClientExtended | PrismaTransactionalClient
 

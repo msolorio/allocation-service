@@ -7,12 +7,12 @@ WORKDIR /app
 
 COPY .eslintignore \
   .eslintrc.json \
+  .editorconfig \
   .prettierrc \
   jest.config.js \
   tsconfig.json \
   package.json \
   package-lock.json \
-  .nvmrc \
   ./
 
 RUN npm ci

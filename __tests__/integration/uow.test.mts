@@ -1,4 +1,5 @@
 import { generatedPrismaClient as prisma } from '#app/adapters/orm/index.mjs'
+import { PrismaClientExtended } from '#app/types.mjs'
 import { deleteAllRecords, insertBatch, insertOrderLine, insertAllocation } from '#__tests__/helpers.mjs'
 import * as unitOfWork from '#app/adapters/unitOfWork.mjs'
 import { Batch, OrderLine } from '#app/domain/model.mjs'
@@ -11,8 +12,8 @@ later.setDate(today.getDate() + 30)
 
 beforeEach(async () => await deleteAllRecords())
 
-async function getBatchAllocatedTo({ prisma, orderref }) {
-  const result = await prisma.$queryRaw`
+async function getBatchAllocatedTo({ prisma, orderref }: { prisma: PrismaClientExtended, orderref: string }): Promise<string> {
+  const result: [{ ref: string }] = await prisma.$queryRaw`
     SELECT b.ref FROM "Allocation" a JOIN "Batch" b ON a.batchId = b.id JOIN "OrderLine" o ON a.orderlineId = o.id
     WHERE o.orderref = ${orderref}
   `
@@ -21,7 +22,7 @@ async function getBatchAllocatedTo({ prisma, orderref }) {
 
 describe('Unit of Work', () => {
   it('can save a batch with allocations', async () => {
-    const uow = new unitOfWork.PrismaUnitOfWork(prisma)
+    const uow = new unitOfWork.PrismaUnitOfWork({ prisma })
     await uow.transaction(async () => {
       const batch = new Batch({ ref: 'batch1', sku: 'sku1', qty: 100, eta: null })
       const line = new OrderLine({ orderref: 'order1', sku: 'sku1', qty: 10 })
@@ -41,7 +42,7 @@ describe('Unit of Work', () => {
   it('can retrieve a batch and allocate to it', async () => {
     await insertBatch({ prisma, ref: 'batch1', sku: 'sku1', qty: 100, eta: null })
 
-    const uow = new unitOfWork.PrismaUnitOfWork(prisma)
+    const uow = new unitOfWork.PrismaUnitOfWork({ prisma })
     await uow.transaction(async () => {
       const batch = await uow.batches.get('batch1')
       const line = new OrderLine({ orderref: 'order1', sku: 'sku1', qty: 10 })
@@ -61,7 +62,7 @@ describe('Unit of Work', () => {
     const orderlineId1 = await insertOrderLine({ prisma, orderref: 'order-1', sku: 'LAMP', qty: 12 })
     await insertAllocation({ prisma, batchId: batchId1, orderlineId: orderlineId1 })
 
-    const uow = new unitOfWork.PrismaUnitOfWork(prisma)
+    const uow = new unitOfWork.PrismaUnitOfWork({ prisma })
     await uow.transaction(async () => {
       const batches = await uow.batches.list()
 
@@ -81,7 +82,7 @@ describe('Unit of Work', () => {
 
 
   it('returns null for batch that doesnt exist', async () => {
-    const uow = new unitOfWork.PrismaUnitOfWork(prisma)
+    const uow = new unitOfWork.PrismaUnitOfWork({ prisma })
     await uow.transaction(async () => {
       const batch = await uow.batches.get('batch1')
       expect(batch).toBeNull()
@@ -89,7 +90,7 @@ describe('Unit of Work', () => {
   })
 
   it('does not commit without explicit commit', async () => {
-    const uow = new unitOfWork.PrismaUnitOfWork(prisma)
+    const uow = new unitOfWork.PrismaUnitOfWork({ prisma })
     await uow.transaction(async () => {
       const batch = new Batch({ ref: 'batch1', sku: 'sku1', qty: 100, eta: null })
       uow.batches.add(batch)

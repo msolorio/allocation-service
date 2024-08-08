@@ -30,44 +30,69 @@ class FakeRepository implements AbstractRepository {
   }
 }
 
+class FakeUnitOfWork {
+  batches: FakeRepository
+  commited: boolean
+
+  constructor() {
+    this.batches = new FakeRepository()
+    this.commited = false
+  }
+
+  async transaction(transactionalWork: () => Promise<any>): Promise<any> {
+    return await transactionalWork()
+  }
+
+  async commit(): Promise<void> {
+    this.commited = true
+  }
+}
+
 describe('add batch service', () => {
   it('adds a batch to the repository', async () => {
-    const repo = new FakeRepository()
-    services.addBatch({ ref: 'batch-1', sku: 'NIGHT_STAND', qty: 20, eta: null, repo })
-    const batch = await repo.get('batch-1')
+    const uow = new FakeUnitOfWork()
+    services.addBatch({ ref: 'batch-1', sku: 'NIGHT_STAND', qty: 20, eta: null, uow })
+    const batch = await uow.batches.get('batch-1')
     expect(batch).not.toBeNull()
     expect(batch?.ref).toEqual('batch-1')
+    expect(uow.commited).toBe(true)
   })
 })
 
 describe('allocate service', () => {
   it('returns batchref allocated to orderline', async () => {
-    const repo = new FakeRepository()
-    await services.addBatch({ ref: 'batch-1', sku: 'TABLE', qty: 20, eta: null, repo })
+    const uow = new FakeUnitOfWork()
+    await services.addBatch({ ref: 'batch-1', sku: 'TABLE', qty: 20, eta: null, uow })
 
-    const result = await services.allocate({ orderref: 'order-1', sku: 'TABLE', qty: 2, repo })
+    const result = await services.allocate({ orderref: 'order-1', sku: 'TABLE', qty: 2, uow })
 
     expect(result).toEqual('batch-1')
   })
 
   it('throws InvalidSku if sku does not exist', async () => {
-    const repo = new FakeRepository()
-    await services.addBatch({ ref: 'batch-1', sku: 'CHAIR', qty: 20, eta: null, repo })
+    const uow = new FakeUnitOfWork()
+    await services.addBatch({ ref: 'batch-1', sku: 'CHAIR', qty: 20, eta: null, uow })
 
     await expect(async () => await services.allocate({
       orderref: 'order-1',
       sku: 'NON_EXISTANT_SKU',
       qty: 2,
-      repo
+      uow
     })).rejects.toThrow(services.InvalidSku)
   })
 
-  it('syncs repository after allocation', async () => {
-    const repo = new FakeRepository()
-    await services.addBatch({ ref: 'batch-1', sku: 'TABLE', qty: 20, repo })
+  it('commits uow after allocation', async () => {
+    const uow = new FakeUnitOfWork()
+    await services.addBatch({ ref: 'batch-1', sku: 'TABLE', qty: 20, eta: null, uow })
+    await services.allocate({ orderref: 'order-1', sku: 'TABLE', qty: 2, uow })
 
-    await services.allocate({ orderref: 'order-1', sku: 'TABLE', qty: 2, repo })
+    expect(uow.commited).toBe(true)
+  })
 
-    expect(repo.syncCalled).toBe(true)
+  it('commits uow after adding batch', async () => {
+    const uow = new FakeUnitOfWork()
+    await services.addBatch({ ref: 'batch-1', sku: 'TABLE', qty: 20, eta: null, uow })
+
+    expect(uow.commited).toBe(true)
   })
 })
