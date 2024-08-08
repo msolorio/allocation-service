@@ -20,6 +20,8 @@ RUN npm ci
 COPY src/ ./src
 COPY __tests__/ ./__tests__
 
+RUN npm run prisma:generate
+
 RUN npm run build
 
 CMD ["npm", "start"]

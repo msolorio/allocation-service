@@ -3,14 +3,11 @@ export COMPOSE_DOCKER_CLI_BUILD=1
 export DOCKER_BUILDKIT=1
 
 build:
-	docker-compose build --no-cache
+	docker-compose build
 
 up:
 	docker-compose up -d app
 	docker-compose exec -d app npm run build:watch
-
-up-ci:
-	docker-compose -f docker-compose.ci.yml up -d app
 
 down:
 	docker-compose down
@@ -25,13 +22,25 @@ ts-build:
 	docker-compose run --rm --no-deps --entrypoint='npm run build' app
 
 test:
-	docker-compose run --rm --no-deps --entrypoint='npm test' app
+	docker-compose exec app npm test
 
 test-coverage:
-	docker-compose run --rm --no-deps --entrypoint='npm run test:coverage' app
-
-test-ci:
-	docker-compose -f docker-compose.ci.yml run --rm --no-deps --entrypoint='npm test' app
+	docker-compose exec app npm run test:coverage
 
 prisma-migrate:
 	docker-compose run --rm --no-deps --entrypoint='npm run prisma:migrate' app
+
+run:
+	docker-compose run --rm --no-deps --entrypoint='$(cmd)' app
+
+build-ci:
+	docker-compose -f docker-compose.ci.yml build
+
+up-ci:
+	docker-compose -f docker-compose.ci.yml up -d app
+
+prisma-migrate-ci:
+	docker-compose run --rm --no-deps --entrypoint='npm run prisma:migrate' app
+
+test-ci:
+	docker-compose -f docker-compose.ci.yml run --rm --no-deps --entrypoint='npm test' app

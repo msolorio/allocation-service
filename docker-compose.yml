@@ -17,7 +17,8 @@ services:
     ports:
       - "3000:80"
     volumes:
-      - .:/app
+      - ./__tests__:/app/__tests__
+      - ./src:/app/src
   postgres:
     container_name: postgres
     image: postgres:16.1

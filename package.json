@@ -17,14 +17,15 @@
     "test:coverage": "jest --coverage --runInBand",
     "prettier": "prettier --config .prettierrc --write .",
     "test:watch": "jest --watch --runInBand",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:generate": "prisma generate"
   },
   "imports": {
     "#app/*": "./dist/src/app/*",
     "#__tests__/*": "./dist/__tests__/*"
   },
   "prisma": {
-    "schema": "src/app/adapters/orm/prisma/schema.prisma"
+    "schema": "./src/app/adapters/orm/prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "5.8.1",
