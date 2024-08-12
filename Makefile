@@ -27,7 +27,7 @@ test:
 test-coverage:
 	docker-compose exec app npm run test:coverage
 
-prisma-migrate:
+migrate:
 	docker-compose run --rm --no-deps --entrypoint='npm run prisma:migrate' app
 
 run:
@@ -39,7 +39,7 @@ build-ci:
 up-ci:
 	docker-compose -f docker-compose.ci.yml up -d app
 
-prisma-migrate-ci:
+migrate-ci:
 	docker-compose run --rm --no-deps --entrypoint='npm run prisma:migrate' app
 
 test-ci:
