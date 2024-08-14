@@ -39,6 +39,10 @@ The application uses a few well known patterns, to aid dependency inversion.
 
 **Trade-offs** - Each pattern adds indirection and congintive load for those unfamiliar. Use of each would be considered independently and wouldn't be necessary in a simple application. You could, for example, still use dependency inversion with only a repository and a service layer.
 
+### Todo
+- Add consistency boundary with optimistic concurrency
+ - invariant: a batch's available quantity must be greater than or equal to zero
+
 ### Setup
 Install docker and then run
 
