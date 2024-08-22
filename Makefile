@@ -30,6 +30,7 @@ test-coverage:
 migrate:
 	docker-compose run --rm --no-deps --entrypoint='npm run prisma:migrate' app
 
+# make run cmd='<command>'
 run:
 	docker-compose run --rm --no-deps --entrypoint='$(cmd)' app
 

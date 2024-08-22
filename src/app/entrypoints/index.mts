@@ -6,6 +6,7 @@ import { generatedPrismaClient as prisma } from '#app/adapters/orm/index.mjs'
 import { PrismaUnitOfWork } from '#app/adapters/unitOfWork.mjs'
 import * as services from '#app/services/index.mjs'
 import { BadRequestError } from '#app/errors.mjs'
+import { OrderLineValidator, BatchValidator } from '#app/entrypoints/validators.mjs'
 
 const app = express()
 app.use(bodyParser.json())
@@ -18,7 +19,7 @@ app.get('/health', (_, res) => {
 app.post('/batch', async (req, res) => {
   try {
     const uow = new PrismaUnitOfWork({ prisma })
-    const { ref, sku, qty, eta } = req.body
+    const { ref, sku, qty, eta } = new BatchValidator().validate(req.body)
     const etaDate = eta ? new Date(eta) : null
     await services.addBatch({ ref, sku, qty, eta: etaDate, uow })
     return res.status(201).json({ ref, sku, qty, eta })
@@ -30,10 +31,12 @@ app.post('/batch', async (req, res) => {
 app.post('/allocation', async (req, res) => {
   try {
     const uow = new PrismaUnitOfWork({ prisma })
-    const { orderref, sku, qty } = req.body
+    const { orderref, sku, qty } = new OrderLineValidator().validate(req.body)
     const batchref = await services.allocate({ orderref, sku, qty, uow })
     return res.status(201).json({ batchref })
   } catch (e) {
+    console.log('error', e)
+
     if (e instanceof BadRequestError) {
       return res.status(400).json({ message: e.message })
     } else {
