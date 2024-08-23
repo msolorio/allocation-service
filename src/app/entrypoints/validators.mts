@@ -40,7 +40,7 @@ class BatchValidator extends Validator {
         ref: z.string(),
         sku: z.string(),
         qty: z.number(),
-        eta: z.string().nullable().default(null),
+        eta: z.string().date().nullable().default(null),
       })
     })
   }
@@ -48,4 +48,4 @@ class BatchValidator extends Validator {
   declare validate: (data: any) => BatchArgs
 }
 
-export { OrderLineValidator, BatchValidator }
+export { OrderLineValidator, BatchValidator, Validator }

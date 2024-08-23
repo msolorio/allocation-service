@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Response } from 'express'
 import bodyParser from 'body-parser'
 import morgan from 'morgan'
 import { getApiUrl, getPort } from '#app/config.mjs'
@@ -16,6 +16,14 @@ app.get('/health', (_, res) => {
   res.status(200).send('OK')
 })
 
+const handleErrors = function ({ res, error }: { res: Response; error: unknown }) {
+  if (error instanceof BadRequestError) {
+    return res.status(400).json({ message: error.message })
+  } else {
+    return res.status(500).json({ message: 'Internal Server Error' })
+  }
+}
+
 app.post('/batch', async (req, res) => {
   try {
     const uow = new PrismaUnitOfWork({ prisma })
@@ -23,8 +31,8 @@ app.post('/batch', async (req, res) => {
     const etaDate = eta ? new Date(eta) : null
     await services.addBatch({ ref, sku, qty, eta: etaDate, uow })
     return res.status(201).json({ ref, sku, qty, eta })
-  } catch (e) {
-    return res.status(500).json({ message: 'Internal Server Error' })
+  } catch (error) {
+    return handleErrors({ res, error })
   }
 })
 
@@ -35,13 +43,7 @@ app.post('/allocation', async (req, res) => {
     const batchref = await services.allocate({ orderref, sku, qty, uow })
     return res.status(201).json({ batchref })
   } catch (e) {
-    console.log('error', e)
-
-    if (e instanceof BadRequestError) {
-      return res.status(400).json({ message: e.message })
-    } else {
-      return res.status(500).json({ message: 'Internal Server Error' })
-    }
+    return handleErrors({ res, error: e })
   }
 })
 
