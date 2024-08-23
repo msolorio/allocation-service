@@ -46,12 +46,20 @@ class Batch {
     }
   }
 
-  deallocate(line: OrderLine): void {
-    this.allocations.delete(line)
+  deallocate({ orderref, sku }: { orderref: string, sku: string }): void {
+    if (this.canDeallocate({ orderref, sku })) {
+      const updatedAllocations = [...this.allocations].filter(line => line.orderref !== orderref)
+      this.allocations = new Set(updatedAllocations)
+    }
   }
 
   equals(other: Batch): boolean {
     return this.ref === other.ref
+  }
+
+  canDeallocate({ orderref, sku }: { orderref: string, sku: string }): boolean {
+    const orderrefs = new Set([...this.allocations].map(line => line.orderref))
+    return orderrefs.has(orderref) && this.sku === sku
   }
 
   canAllocate(line: OrderLine): boolean {
@@ -63,7 +71,7 @@ class Batch {
   }
 }
 
-function allocate(orderline: OrderLine, batches: Array<Batch>): string {
+const allocate = function (orderline: OrderLine, batches: Array<Batch>): string {
   const sortedBatches = batches.sort((a, b) => {
     if (a.eta === null) {
       return -1
@@ -84,4 +92,12 @@ function allocate(orderline: OrderLine, batches: Array<Batch>): string {
   throw new OutOfStock(`Out of stock for sku: ${orderline.sku}`)
 }
 
-export { Batch, OrderLine, allocate, OutOfStock }
+const deallocate = function ({ orderref, sku, batches }: { orderref: string, sku: string, batches: Array<Batch> }) {
+  batches.forEach(batch => {
+    if (batch.canDeallocate({ orderref, sku })) {
+      batch.deallocate({ orderref, sku })
+    }
+  })
+}
+
+export { Batch, OrderLine, allocate, OutOfStock, deallocate }

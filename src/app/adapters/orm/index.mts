@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { Batch, OrderLine } from '#app/domain/model.mjs'
-import { PrismaBatch, OrderLineRecord, OrderLineArgs, PrismaSaveFromDomainClient } from '#app/types.mjs'
+import { PrismaBatch, PrismaOrderLine, OrderLineRecord, OrderLineArgs, PrismaSaveFromDomainClient } from '#app/types.mjs'
 
 const generatePrismaClient = function () {
   const prismaClient = new PrismaClient()
@@ -52,20 +52,34 @@ const generatePrismaClient = function () {
             eta: domainBatch.eta,
           }
 
-          const { id: batchid } = await prisma.batch.upsert({
+          const prismaBatch = await prisma.batch.upsert({
             where: { ref: domainBatch.ref },
             create: batchData,
             update: batchData,
+            include: { allocations: { include: { orderline: true } } }
           })
 
           for (const orderLine of domainBatch.allocations) {
             const { id: orderlineid } = await prisma.orderLine.saveFromDomain(prisma, orderLine)
             if (orderlineid) {
-              const allocationData = { batchid, orderlineid }
+              const allocationData = { batchid: prismaBatch.id, orderlineid }
               await prisma.allocation.upsert({
-                where: { batchid: batchid, orderlineid: orderlineid },
+                where: { batchid: prismaBatch.id, orderlineid: orderlineid },
                 create: allocationData,
                 update: allocationData,
+              })
+            }
+          }
+
+          for (const allocation of prismaBatch.allocations) { // remove deleted allocations
+            const prismaOrderline = allocation.orderline as PrismaOrderLine
+            const domainOrderrefs = new Set([...domainBatch.allocations].map(line => line.orderref))
+            if (!domainOrderrefs.has(prismaOrderline.orderref)) {
+              await prisma.allocation.delete({
+                where: { id: allocation.id }
+              })
+              await prisma.orderLine.delete({
+                where: { id: prismaOrderline.id },
               })
             }
           }

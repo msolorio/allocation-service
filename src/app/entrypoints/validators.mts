@@ -48,4 +48,21 @@ class BatchValidator extends Validator {
   declare validate: (data: any) => BatchArgs
 }
 
-export { OrderLineValidator, BatchValidator, Validator }
+class DeleteAllocateOrderLineValidator extends Validator {
+  constructor() {
+    super({
+      schema: z.object({
+        orderref: z.string(),
+        sku: z.string(),
+      })
+    })
+  }
+
+  declare validate: (data: any) => { orderref: string, sku: string }
+}
+
+export {
+  OrderLineValidator,
+  BatchValidator,
+  DeleteAllocateOrderLineValidator,
+}

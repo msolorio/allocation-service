@@ -2,6 +2,12 @@ import { Batch } from '#app/domain/model.mjs'
 import { AbstractRepository } from '#app/adapters/repository.mjs'
 import * as services from '#app/services/index.mjs'
 
+const today = new Date()
+const tomorrow = new Date(today)
+tomorrow.setDate(today.getDate() + 1)
+const later = new Date(today)
+later.setDate(today.getDate() + 30)
+
 class FakeRepository implements AbstractRepository {
   private batches: Set<Batch>
   syncCalled: boolean
@@ -60,7 +66,7 @@ describe('add batch service', () => {
 })
 
 describe('allocate service', () => {
-  it('returns batchref allocated to orderline', async () => {
+  it('returns batchref allocated to', async () => {
     const uow = new FakeUnitOfWork()
     await services.addBatch({ ref: 'batch-1', sku: 'TABLE', qty: 20, eta: null, uow })
 
@@ -94,5 +100,26 @@ describe('allocate service', () => {
     await services.addBatch({ ref: 'batch-1', sku: 'TABLE', qty: 20, eta: null, uow })
 
     expect(uow.commited).toBe(true)
+  })
+})
+
+describe('deallocate service', () => {
+  it('deallocates from list of batches', async () => {
+    const uow = new FakeUnitOfWork()
+    await services.addBatch({ ref: 'batch-1', sku: 'LAMP', qty: 20, eta: null, uow })
+    await services.addBatch({ ref: 'batch-2', sku: 'LAMP', qty: 20, eta: today, uow })
+
+    await services.allocate({ orderref: 'order-1', sku: 'LAMP', qty: 2, uow })
+    await services.allocate({ orderref: 'order-2', sku: 'LAMP', qty: 2, uow })
+    let batch1 = await uow.batches.get('batch-1')
+    expect(batch1?.availableQty).toBe(16)
+
+    services.deallocate({ orderref: 'order-1', sku: 'LAMP', uow })
+
+    batch1 = await uow.batches.get('batch-1')
+    const batch2 = await uow.batches.get('batch-2')
+
+    expect(batch1?.availableQty).toBe(18)
+    expect(batch2?.availableQty).toBe(20)
   })
 })

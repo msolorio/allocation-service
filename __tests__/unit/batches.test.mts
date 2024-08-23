@@ -1,11 +1,5 @@
 import { Batch, OrderLine } from '#app/domain/model.mjs'
-
-const createBatchAndLine = function ({ sku, batchQty, lineQty }: { sku: string, batchQty: number, lineQty: number }) {
-  const batch = new Batch({ ref: 'batch-1', sku, qty: batchQty })
-  const orderline = new OrderLine({ orderref: 'order-1', sku, qty: lineQty })
-
-  return { batch, orderline }
-}
+import { createBatchAndLine } from '#__tests__/helpers.mjs'
 
 describe('batch', () => {
   it('can allocate an orderline if available greater than required', () => {
@@ -55,7 +49,7 @@ describe('batch', () => {
 
     batch.allocate(orderline)
     expect(batch.availableQty).toBe(18)
-    batch.deallocate(orderline)
+    batch.deallocate({ orderref: orderline.orderref, sku: orderline.sku })
 
     expect(batch.availableQty).toBe(20)
   })
@@ -63,7 +57,7 @@ describe('batch', () => {
   it('cannot deallocate an unallocated line', () => {
     const { batch, orderline } = createBatchAndLine({ sku: 'LAMP', batchQty: 20, lineQty: 2 })
 
-    batch.deallocate(orderline)
+    batch.deallocate({ orderref: orderline.orderref, sku: orderline.sku })
 
     expect(batch.availableQty).toBe(20)
   })

@@ -5,6 +5,14 @@ import {
   AllocationArgs,
   PrismaClientExtended,
 } from '#app/types.mjs'
+import { Batch, OrderLine } from '#app/domain/model.mjs'
+
+const createBatchAndLine = function ({ sku, batchQty, lineQty }: { sku: string, batchQty: number, lineQty: number }) {
+  const batch = new Batch({ ref: 'batch-1', sku, qty: batchQty })
+  const orderline = new OrderLine({ orderref: 'order-1', sku, qty: lineQty })
+
+  return { batch, orderline }
+}
 
 async function deleteAllRecords(): Promise<void> {
   try {
@@ -46,6 +54,7 @@ async function insertAllocation({ prisma, batchId, orderlineId }: { prisma: Pris
 }
 
 export {
+  createBatchAndLine,
   deleteAllRecords,
   fromJsDateToStringDate,
   insertBatch,

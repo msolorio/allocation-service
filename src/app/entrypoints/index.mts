@@ -6,7 +6,11 @@ import { generatedPrismaClient as prisma } from '#app/adapters/orm/index.mjs'
 import { PrismaUnitOfWork } from '#app/adapters/unitOfWork.mjs'
 import * as services from '#app/services/index.mjs'
 import { BadRequestError } from '#app/errors.mjs'
-import { OrderLineValidator, BatchValidator } from '#app/entrypoints/validators.mjs'
+import {
+  OrderLineValidator,
+  BatchValidator,
+  DeleteAllocateOrderLineValidator,
+} from '#app/entrypoints/validators.mjs'
 
 const app = express()
 app.use(bodyParser.json())
@@ -42,8 +46,19 @@ app.post('/allocation', async (req, res) => {
     const { orderref, sku, qty } = new OrderLineValidator().validate(req.body)
     const batchref = await services.allocate({ orderref, sku, qty, uow })
     return res.status(201).json({ batchref })
-  } catch (e) {
-    return handleErrors({ res, error: e })
+  } catch (error) {
+    return handleErrors({ res, error })
+  }
+})
+
+app.delete('/allocation', async (req, res) => {
+  try {
+    const uow = new PrismaUnitOfWork({ prisma })
+    const { orderref, sku } = new DeleteAllocateOrderLineValidator().validate(req.body)
+    await services.deallocate({ orderref, sku, uow })
+    return res.status(204).send()
+  } catch (error) {
+    return handleErrors({ res, error })
   }
 })
 
