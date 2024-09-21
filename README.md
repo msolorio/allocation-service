@@ -16,9 +16,9 @@ Backend API for allocating customer orders to batches of stock in a warehouse.
 
 ---
 
-### [Dependency Inversion](https://en.wikipedia.org/wiki/Dependency_inversion_principle)
+### Architecture
 
-The application creates abstractions around I/O and injects them. The service layer can be passed a fake implementation of I/O, allowing for testing the application "edge-to-edge" with fast, in-memory unit tests.
+The application creates abstractions around I/O and injects them, allowing for testing the application "edge-to-edge" with fast, in-memory unit tests.
 
 ![in-memory-implementation](README_assets/in-memory-implementation.png)
 
@@ -30,14 +30,15 @@ For real-world, the service layer is passed real I/O that talks to a database.
 
 ---
 
-The application uses a few well known patterns, to aid dependency inversion.
+A few patterns are used to aid dependency inversion.
 
 **Repository** - an abstraction around data access. Handles syncing between the domain model and the ORM.<br>
 **Unit of Work** - an abstraction around transactions and atomicity.<br>
 **Service Layer** - the entrypoint for injecting I/O and defines the application's use cases.<br>
 **Domain Model** - an object module of the business domain free of dependencies on data access.<br>
+**Data Mapper** - handles conversion between domain objects and db objects.<br>
 
-**Trade-offs** - Each pattern adds indirection and congintive load for those unfamiliar. Use of each would be considered independently and wouldn't be necessary in a simple application. You could, for example, still use dependency inversion with only a repository and a service layer.
+**Trade-offs** - Each pattern adds indirection and congintive load, and wouldn't be necessary in a simple application. You could, for example, still achieve dependency inversion with only a simple repository and a service layer.
 
 ### Todo
 - Add consistency boundary with optimistic concurrency

@@ -35,13 +35,13 @@ run:
 	docker-compose run --rm --no-deps --entrypoint='$(cmd)' app
 
 build-ci:
-	docker-compose -f docker-compose.ci.yml build
+	docker-compose -f docker-compose.ci.yml build --no-cache
 
 up-ci:
 	docker-compose -f docker-compose.ci.yml up -d app
 
 migrate-ci:
-	docker-compose run --rm --no-deps --entrypoint='npm run prisma:migrate' app
+	docker-compose -f docker-compose.ci.yml run --rm --no-deps --entrypoint='npm run prisma:migrate' app
 
 test-ci:
 	docker-compose -f docker-compose.ci.yml run --rm --no-deps --entrypoint='npm test' app
